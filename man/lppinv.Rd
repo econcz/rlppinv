@@ -16,6 +16,7 @@ lppinv(
   tolerance = sqrt(.Machine$double.eps),
   final = TRUE,
   alpha = NULL,
+  cond_tolerance = NULL,
   ...
 )
 }
@@ -58,6 +59,11 @@ If \code{FALSE}, only the first step of the CLSP estimator is performed.}
 
 \item{alpha}{numeric scalar, numeric vector, or \code{NULL},
 Regularization parameter for the second step of the CLSP estimator.}
+
+\item{cond_tolerance}{numeric scalar or \code{NULL}, default = \code{NULL}
+Singular-value cutoff for the custom condition number function.
+If \code{NULL}, the implementation uses an internal relative cutoff of
+1e-14.}
 
 \item{...}{Additional arguments passed to the \pkg{rclsp} solver.}
 }

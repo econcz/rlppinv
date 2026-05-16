@@ -3,3 +3,5 @@
 ^cran-comments\.md$
 ^\.Rproj\.user$
 ^\.github$
+^\.positai$
+^\.claude$

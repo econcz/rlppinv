@@ -39,6 +39,11 @@
 #' @param alpha numeric scalar, numeric vector, or \code{NULL},
 #'   Regularization parameter for the second step of the CLSP estimator.
 #'
+#' @param cond_tolerance numeric scalar or \code{NULL}, default = \code{NULL}
+#'   Singular-value cutoff for the custom condition number function.
+#'   If \code{NULL}, the implementation uses an internal relative cutoff of
+#'   1e-14.
+#'
 #' @param ... Additional arguments passed to the \pkg{rclsp} solver.
 #'
 #' @return
@@ -116,7 +121,7 @@
 lppinv <- function(c=NULL, A_ub=NULL, b_ub= NULL, A_eq=NULL, b_eq=NULL,
                    non_negative=TRUE, bounds=NULL, replace_value=NA_real_,
                    tolerance=sqrt(.Machine$double.eps), final=TRUE,
-                   alpha=NULL, ...) {
+                   alpha=NULL, cond_tolerance=NULL, ...) {
   dots   <- list(...)
   dots$C <- NULL
   dots$S <- NULL
@@ -168,14 +173,12 @@ lppinv <- function(c=NULL, A_ub=NULL, b_ub= NULL, A_eq=NULL, b_eq=NULL,
   b <- matrix(numeric(0L),   ncol=1L)
   if (!is.null(b_ub)) b <-   rbind(b, b_ub)
   if (!is.null(b_eq)) b <-   rbind(b, b_eq)
-  b <- rbind(b, matrix(rbind(vapply(bounds, function(v) if (is.na(v[2]))    Inf
-                                    else                          v[2],
-                                    numeric(1L)),
-                             vapply(bounds, function(v) if (is.na(v[1]))
-                               if (isTRUE(non_negative))       0 else -Inf
-                               else                          v[1],
-                               numeric(1L))),
-                       ncol=1L))
+  upper <- vapply(bounds, function(v) if (is.na(v[2])) Inf else v[2],
+                  numeric(1L))
+  lower <- vapply(bounds, function(v) { if (is.na(v[1])) {
+                                          if (isTRUE(non_negative)) 0 else -Inf
+                                        } else v[1] }, numeric(1L))
+  b <- rbind(b, matrix(c(upper, lower), ncol=1L))
   
   # (C), (S) Construct conformable blocks for the design matrix A
   if (!is.null(A_ub) && !is.null(A_eq)) if (ncol(A_ub) != ncol(A_eq))
@@ -213,11 +216,12 @@ lppinv <- function(c=NULL, A_ub=NULL, b_ub= NULL, A_eq=NULL, b_eq=NULL,
                                                      nonzero_cols,  drop=FALSE],
                                                  b=b[finite_rows, , drop=FALSE],
                                                  tolerance=tolerance,
-                                                 final=final, alpha=alpha),
+                                                 final=final, alpha=alpha,
+                                                 cond_tolerance=cond_tolerance),
                                             dots))
   
   # (result) Replace out-of-bound values with replace_value
-  x        <- matrix(result$x, ncol=1L)
+  x        <- matrix(as.vector(t(result$x)), ncol=1L)
   x_lb     <- vapply(bounds, function(v) if (is.na(v[1]))
     if (isTRUE(non_negative))  0 else -Inf
     else                          v[1], numeric(1L))
