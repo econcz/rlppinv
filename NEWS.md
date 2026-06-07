@@ -1,3 +1,9 @@
+# rlppinv 1.1.0
+
+## Changes
+* Updated the minimum R version to R 4.3 to match CVXR 1.8.x requirements.
+* Synchronized the package with `rclsp` 1.1.0.
+
 # rlppinv 1.0.0
 
 ## Changes
