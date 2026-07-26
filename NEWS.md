@@ -1,3 +1,8 @@
+# rlppinv 2.0.0
+
+## Changes
+* Synchronized the package with `rclsp` 2.0.0.
+
 # rlppinv 1.1.0
 
 ## Changes
